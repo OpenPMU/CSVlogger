@@ -46,7 +46,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 see :ref:`xml-exchange-format`
 """
 
-from __future__ import print_function
 from lxml import etree
 import os
 

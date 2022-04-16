@@ -135,7 +135,7 @@ def makeCSVheader(phChannels=[], phKeys=["Mag", "Angle", "Freq", "ROCOF"]):
     
     for i in phChannels:                            # Loop phasor fields
         for key in phKeys:            
-            header += key + ','                     
+            header += key + str(i) + ','            # Add channel number to key          
     return header.rsplit(',',1)[0]                  # Remove trailing comma
 
 # Finds the floor datetime for a given interval, used to create CSV filenames
@@ -235,18 +235,7 @@ if __name__ == '__main__':
             
             continue    # Now that initialisation is complete, restart loop
 
-        # Initialise a new CSV file with header
-        if csvFileTime != csvFileTimeInUse:
-                        
-            header = makeCSVheader(config["csvChannels"])
-            
-            csvFilePath = makeCSVFilePath(csvFileTime, config["csvPath"])
-            ensureDir(csvFilePath)                  # Make sure directory for CSV file exists
-            
-            with open(csvFilePath, 'a') as f:
-                f.write(header + '\n')
-                
-            csvFileTimeInUse = csvFileTime        
+
         
         # Check for second rollover, copy csvBuffer to csvWriteBuffer
         if frameTime.microsecond < preFrameTime.microsecond:
@@ -265,7 +254,8 @@ if __name__ == '__main__':
         # Check for minute rollover, write buffer to csvFile
         if frameTime.minute != preFrameTime.minute:            
             
-            csvFilePath = makeCSVFilePath(csvFileTime, config["csvPath"])
+            csvFilePath = makeCSVFilePath(csvFileTimeInUse, config["csvPath"])
+            ensureDir(csvFilePath)                  # Make sure directory for CSV file exists
             with open(csvFilePath, 'a') as f:
                 f.write(csvWriteBuffer)    
             csvWriteBuffer = str()                              # Clear csvWriteBuffer
@@ -273,6 +263,19 @@ if __name__ == '__main__':
             print('')                                           # Add a line break
             printProgressHeader(csvFileTime, frameTime)         # Print heartbeat debug info 
      
+
+        # Initialise a new CSV file with header
+        if csvFileTime != csvFileTimeInUse:
+                        
+            header = makeCSVheader(config["csvChannels"])
+            
+            csvFilePath = makeCSVFilePath(csvFileTime, config["csvPath"])
+            ensureDir(csvFilePath)                  # Make sure directory for CSV file exists
+            
+            with open(csvFilePath, 'a') as f:
+                f.write(header + '\n')
+                
+            csvFileTimeInUse = csvFileTime        
         
         # Check for day rollover (i.e. midnight)
         if frameTime.day != preFrameTime.day:                
